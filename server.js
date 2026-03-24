@@ -8,6 +8,9 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
+// Required for Codespaces / any reverse proxy (Heroku, Railway, etc.)
+app.set('trust proxy', 1);
+
 const {
   AUTH_URL,
   TOKEN_URL,
@@ -25,7 +28,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,   // set true if behind HTTPS in production
+    secure: 'auto',   // auto = true when behind HTTPS proxy, false for local HTTP
+    sameSite: 'lax',
     maxAge: 8 * 60 * 60 * 1000  // 8 hours
   }
 }));
