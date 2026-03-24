@@ -523,9 +523,10 @@
   marked.setOptions({ breaks: true, gfm: true });
 
   // ── STATE ──
-  let conversations = JSON.parse(localStorage.getItem('fusionai_convs') || '[]');
+  let conversations = [];
   let activeConvId = null;
   let isLoading = false;
+  let storageKey = 'fusionai_convs'; // overwritten once user sub is known
 
   // ── DOM ──
   const convList    = document.getElementById('conversations-list');
@@ -538,7 +539,6 @@
 
   // ── INIT ──
   loadUserInfo();
-  renderSidebar();
 
   // Check for auth error in URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -555,15 +555,21 @@
       const data = await res.json();
       if (data.authenticated && data.user) {
         const name = data.user.name || 'User';
+        const sub  = data.user.sub  || 'unknown';
+
+        // Namespace storage by user sub — each user gets their own conversations
+        storageKey = `fusionai_convs_${sub}`;
+        conversations = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
         document.getElementById('user-name').textContent = name;
         document.getElementById('user-email').textContent = data.user.email || '';
         document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-
-        // Update empty state greeting
         document.querySelector('#empty-state h2').textContent =
           `How can I help you, ${name.split(' ')[0]}?`;
       }
     } catch (_) {}
+
+    renderSidebar();
   }
 
   // ── LOGOUT ──
@@ -769,7 +775,7 @@
   }
 
   function scrollToBottom() { messages.scrollTop = messages.scrollHeight; }
-  function saveConvs() { localStorage.setItem('fusionai_convs', JSON.stringify(conversations)); }
+  function saveConvs() { localStorage.setItem(storageKey, JSON.stringify(conversations)); }
   function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function formatDate(iso) {
     const d = new Date(iso), now = new Date(), diff = now - d;

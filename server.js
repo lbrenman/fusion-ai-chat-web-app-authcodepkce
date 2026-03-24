@@ -161,7 +161,7 @@ app.get('/api/me', (req, res) => {
   }
   res.json({
     authenticated: true,
-    user: req.session.user || { name: 'User' },
+    user: req.session.user || { name: 'User', email: '', sub: 'unknown' },
     expiresAt: req.session.tokenExpiresAt,
   });
 });
