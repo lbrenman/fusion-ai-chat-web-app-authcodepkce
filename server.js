@@ -75,6 +75,7 @@ app.get('/login', (req, res) => {
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
+    prompt: 'login',  // always show login screen, even if SSO session exists
   });
 
   res.redirect(`${AUTH_URL}?${params.toString()}`);
@@ -115,6 +116,7 @@ app.get('/callback', async (req, res) => {
 
     // Store token in session
     req.session.accessToken = access_token;
+    req.session.idToken = id_token || null;
     req.session.tokenExpiresAt = Date.now() + (expires_in || 3600) * 1000;
 
     // Try to extract user info from id_token if present
@@ -145,10 +147,11 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-// Logout
+// Logout — destroy local session and force Keycloak to show login screen
 app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
 });
 
 // ── AUTH STATUS API ───────────────────────────────────────────────────────────
