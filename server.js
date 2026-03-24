@@ -180,6 +180,10 @@ app.post('/api/chat', requireAuth, async (req, res) => {
     const body = { prompt };
     if (conversationId) body.conversationId = conversationId;
 
+    console.log('Calling:', `${BASE_URL}/chatconversation/v1/prompt`);
+    console.log('Body:', JSON.stringify(body));
+    console.log('Token (first 20 chars):', req.session.accessToken?.substring(0, 20));
+
     const response = await axios.post(
       `${BASE_URL}/chatconversation/v1/prompt`,
       body,
