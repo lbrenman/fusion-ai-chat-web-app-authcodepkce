@@ -2,6 +2,10 @@
 
 A Claude-inspired AI chat interface with OAuth 2.0 Authorization Code + PKCE authentication. Users must log in before accessing the chat. Built on Node.js/Express and connects to the [Fusion AI Conversation API](https://github.com/lbrenman/fusion-ai-chat-conversation-api).
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/lbrenman/fusion-ai-chat-web-app-authcodepkce)
+
+Run locally or in Codespace
+
 ## Features
 
 - 🔐 OAuth 2.0 Authorization Code + PKCE flow (no client secret needed in browser)
@@ -125,5 +129,16 @@ Set environment variables as **Codespace secrets** in your GitHub repository set
 ```env
 REDIRECT_URI=https://<your-codespace>-3000.app.github.dev/callback
 ```
+
+# OAuth Provider
+
+Keycloak client settings:
+1. Client authentication must be OFF
+In Keycloak, go to your client settings and make sure Client authentication is set to OFF. PKCE uses a public client — no client secret. If it's ON, Keycloak expects a client_secret in the token request which we're not sending.
+2. Standard flow must be enabled
+Make sure Standard flow is enabled (this is the Authorization Code flow).
+3. Valid redirect URIs must include your callback
+Add your Codespaces callback URL:
+https://<your-codespace>-3000.app.github.dev/callback
 
 Make sure this URI is also registered with your OAuth provider.
