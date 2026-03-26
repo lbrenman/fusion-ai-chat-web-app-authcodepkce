@@ -762,7 +762,7 @@
     col.appendChild(bubble);
 
     // Add model badge below AI bubbles if modelUsed is present
-    if (role === 'ai' && modelUsed) {
+    if ((role === 'ai' || role === 'assistant') && modelUsed) {
       const badge = document.createElement('div');
       badge.className = 'model-badge';
       badge.innerHTML = `
