@@ -628,6 +628,8 @@
   }
 
   function loadConv(id) {
+    // Always reload from localStorage to ensure modelUsed and other fields are current
+    conversations = JSON.parse(localStorage.getItem(storageKey) || '[]');
     const conv = conversations.find(c => c.id === id);
     if (!conv) return;
     activeConvId = id;
