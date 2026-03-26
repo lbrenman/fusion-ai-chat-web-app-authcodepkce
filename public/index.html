@@ -452,6 +452,19 @@
     #input-hint { margin-top: 8px; font-size: 11px; color: var(--text-dim); text-align: center; }
 
     * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+    /* Model badge shown below AI bubbles */
+    .model-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      margin-left: 42px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .model-badge svg { opacity: 0.5; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -621,7 +634,7 @@
     chatTitle.textContent = conv.title;
     convIdDisp.textContent = id;
     messages.innerHTML = '';
-    conv.messages.forEach(m => appendBubble(m.role, m.content, false));
+    conv.messages.forEach(m => appendBubble(m.role, m.content, false, m.modelUsed));
     renderSidebar();
     scrollToBottom();
   }
@@ -686,7 +699,7 @@
 
       if (!res.ok) throw new Error(data.error || `API error (${res.status})`);
 
-      const { message, conversationId } = data;
+      const { message, conversationId, modelUsed } = data;
 
       if (!activeConvId) {
         activeConvId = conversationId;
@@ -699,13 +712,13 @@
       const conv = conversations.find(c => c.id === activeConvId);
       if (conv) {
         conv.messages.push({ role: 'user', content: prompt });
-        conv.messages.push({ role: 'assistant', content: message });
+        conv.messages.push({ role: 'assistant', content: message, modelUsed: modelUsed || null });
         conv.date = new Date().toISOString();
       }
 
       saveConvs();
       renderSidebar();
-      appendBubble('ai', message, true);
+      appendBubble('ai', message, true, modelUsed);
       scrollToBottom();
 
     } catch (err) {
@@ -722,7 +735,7 @@
   }
 
   // ── BUBBLES ──
-  function appendBubble(role, content, animate) {
+  function appendBubble(role, content, animate, modelUsed) {
     const row = document.createElement('div');
     row.className = `msg-row ${role === 'user' ? 'user' : 'ai'}`;
     if (!animate) row.style.animation = 'none';
@@ -739,8 +752,31 @@
       bubble.innerHTML = marked.parse(content);
     }
 
+    // Wrap bubble (and optional badge) in a column container
+    const col = document.createElement('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.maxWidth = '72%';
+    col.appendChild(bubble);
+
+    // Add model badge below AI bubbles if modelUsed is present
+    if (role === 'ai' && modelUsed) {
+      const badge = document.createElement('div');
+      badge.className = 'model-badge';
+      badge.innerHTML = `
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M5 3v2.5L6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        ${escHtml(modelUsed)}
+      `;
+      col.appendChild(badge);
+    }
+
+    bubble.style.maxWidth = '100%';
+
     row.appendChild(avatar);
-    row.appendChild(bubble);
+    row.appendChild(col);
     messages.appendChild(row);
     return row;
   }
