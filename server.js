@@ -147,10 +147,10 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-// Logout — destroy local session and force Keycloak to show login screen
+// Logout — destroy local session and return to landing page
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
-    res.redirect('/login');
+    res.redirect('/');
   });
 });
 
@@ -218,12 +218,22 @@ app.post('/api/chat', requireAuth, async (req, res) => {
   }
 });
 
-// ── STATIC FILES (protected) ──────────────────────────────────────────────────
-app.get('/', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ── STATIC FILES ─────────────────────────────────────────────────────────────
+// Root: show landing page if not authenticated, chat app if authenticated
+app.get('/', (req, res) => {
+  if (req.session.accessToken) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 
-app.use(requireAuth, express.static(path.join(__dirname, 'public')));
+// Protect all other static files except landing page
+app.use((req, res, next) => {
+  if (req.path === '/landing.html') return next();
+  requireAuth(req, res, next);
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {
   console.log(`✅ Fusion AI Chat (PKCE) running on http://localhost:${PORT}`);

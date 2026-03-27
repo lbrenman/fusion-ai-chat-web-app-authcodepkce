@@ -553,14 +553,6 @@
   // ── INIT ──
   loadUserInfo();
 
-  // Check for auth error in URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const authError = urlParams.get('auth_error');
-  if (authError) {
-    showAuthError(decodeURIComponent(authError));
-    window.history.replaceState({}, '', '/');
-  }
-
   // ── USER INFO ──
   async function loadUserInfo() {
     try {
